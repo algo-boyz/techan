@@ -1,6 +1,6 @@
 package techan
 
-import "github.com/sdcoffey/big"
+import "github.com/algo-boyz/decimal"
 
 // NewMaximumDrawdownIndicator returns a derivative Indicator which returns the maximum
 // drawdown of the underlying indicator over a window. Maximum drawdown is defined as the
@@ -20,7 +20,7 @@ type maximumDrawdownIndicator struct {
 	window    int
 }
 
-func (mdi maximumDrawdownIndicator) Calculate(index int) big.Decimal {
+func (mdi maximumDrawdownIndicator) Calculate(index int) decimal.Decimal {
 	minVal := NewMinimumValueIndicator(mdi.indicator, mdi.window).Calculate(index)
 	maxVal := NewMaximumValueIndicator(mdi.indicator, mdi.window).Calculate(index)
 

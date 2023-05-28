@@ -18,7 +18,7 @@ func TestSimpleMovingAverage(t *testing.T) {
 		62.07,
 	}
 
-	closePriceIndicator := NewClosePriceIndicator(mockedTimeSeries)
+	CloseIndicator := NewCloseIndicator(mockedTimeSeries)
 
-	indicatorEquals(t, expectedValues, NewSimpleMovingAverage(closePriceIndicator, 3))
+	indicatorEquals(t, expectedValues, NewSimpleMovingAverage(CloseIndicator, 3))
 }

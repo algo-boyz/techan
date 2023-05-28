@@ -1,13 +1,12 @@
 package techan
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
-	"fmt"
-	"strings"
-
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,17 +17,17 @@ func TestCandle_AddTrade(t *testing.T) {
 		End:   now.Add(time.Minute),
 	})
 
-	candle.AddTrade(big.NewDecimal(1), big.NewDecimal(2)) // Open
-	candle.AddTrade(big.NewDecimal(1), big.NewDecimal(5)) // High
-	candle.AddTrade(big.NewDecimal(1), big.NewDecimal(1)) // Low
-	candle.AddTrade(big.NewDecimal(1), big.NewDecimal(3)) // No Diff
-	candle.AddTrade(big.NewDecimal(1), big.NewDecimal(3)) // Close
+	candle.AddTrade(decimal.NewFromInt(1), decimal.NewFromInt(2)) // Open
+	candle.AddTrade(decimal.NewFromInt(1), decimal.NewFromInt(5)) // High
+	candle.AddTrade(decimal.NewFromInt(1), decimal.NewFromInt(1)) // Low
+	candle.AddTrade(decimal.NewFromInt(1), decimal.NewFromInt(3)) // No Diff
+	candle.AddTrade(decimal.NewFromInt(1), decimal.NewFromInt(3)) // Close
 
-	assert.EqualValues(t, 2, candle.OpenPrice.Float())
-	assert.EqualValues(t, 5, candle.MaxPrice.Float())
-	assert.EqualValues(t, 1, candle.MinPrice.Float())
-	assert.EqualValues(t, 3, candle.ClosePrice.Float())
-	assert.EqualValues(t, 5, candle.Volume.Float())
+	assert.EqualValues(t, 2, candle.Open.InexactFloat64())
+	assert.EqualValues(t, 5, candle.High.InexactFloat64())
+	assert.EqualValues(t, 1, candle.Low.InexactFloat64())
+	assert.EqualValues(t, 3, candle.Close.InexactFloat64())
+	assert.EqualValues(t, 5, candle.Volume.InexactFloat64())
 	assert.EqualValues(t, 5, candle.TradeCount)
 }
 
@@ -39,11 +38,11 @@ func TestCandle_String(t *testing.T) {
 		End:   now.Add(time.Minute),
 	})
 
-	candle.ClosePrice = big.NewFromString("1")
-	candle.OpenPrice = big.NewFromString("2")
-	candle.MaxPrice = big.NewFromString("3")
-	candle.MinPrice = big.NewFromString("0")
-	candle.Volume = big.NewFromString("10")
+	candle.Close, _ = decimal.NewFromString("1")
+	candle.Open, _ = decimal.NewFromString("2")
+	candle.High, _ = decimal.NewFromString("3")
+	candle.Low, _ = decimal.NewFromString("0")
+	candle.Volume, _ = decimal.NewFromString("10")
 
 	expected := strings.TrimSpace(fmt.Sprintf(`
 Time:	%s

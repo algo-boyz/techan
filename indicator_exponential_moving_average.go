@@ -1,11 +1,11 @@
 package techan
 
-import "github.com/sdcoffey/big"
+import "github.com/algo-boyz/decimal"
 
 type emaIndicator struct {
 	indicator   Indicator
 	window      int
-	alpha       big.Decimal
+	alpha       decimal.Decimal
 	resultCache resultCache
 }
 
@@ -16,20 +16,20 @@ func NewEMAIndicator(indicator Indicator, window int) Indicator {
 	return &emaIndicator{
 		indicator:   indicator,
 		window:      window,
-		alpha:       big.ONE.Frac(2).Div(big.NewFromInt(window + 1)),
-		resultCache: make([]*big.Decimal, 1000),
+		alpha:       decimal.NewFromInt(1).Mul(decimal.NewFromInt(2)).Div(decimal.NewFromInt(int64(window + 1))),
+		resultCache: make([]*decimal.Decimal, 1000),
 	}
 }
 
-func (ema *emaIndicator) Calculate(index int) big.Decimal {
-	if cachedValue := returnIfCached(ema, index, func(i int) big.Decimal {
+func (ema *emaIndicator) Calculate(index int) decimal.Decimal {
+	if cachedValue := returnIfCached(ema, index, func(i int) decimal.Decimal {
 		return NewSimpleMovingAverage(ema.indicator, ema.window).Calculate(i)
 	}); cachedValue != nil {
 		return *cachedValue
 	}
 
 	todayVal := ema.indicator.Calculate(index).Mul(ema.alpha)
-	result := todayVal.Add(ema.Calculate(index - 1).Mul(big.ONE.Sub(ema.alpha)))
+	result := todayVal.Add(ema.Calculate(index - 1).Mul(decimal.NewFromInt(1).Sub(ema.alpha)))
 
 	cacheResult(ema, index, result)
 

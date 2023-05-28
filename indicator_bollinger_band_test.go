@@ -4,12 +4,12 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
-func decimalAlmostEquals(t *testing.T, expected, actual big.Decimal, epsilon float64) {
-	assert.InEpsilon(t, expected.Float(), actual.Float(), epsilon)
+func decimalAlmostEquals(t *testing.T, expected, actual decimal.Decimal, epsilon float64) {
+	assert.InEpsilon(t, expected.InexactFloat64(), actual.InexactFloat64(), epsilon)
 }
 
 // number data from https://school.stockcharts.com/doku.php?id=technical_indicators:bollinger_bands
@@ -104,7 +104,7 @@ func TestBollingerBandIndicator(t *testing.T) {
 
 	window := 20
 	sigma := 2.0
-	src := NewClosePriceIndicator(ts)
+	src := NewCloseIndicator(ts)
 	sma := NewSimpleMovingAverage(src, window)
 	wstd := NewWindowedStandardDeviationIndicator(src, window)
 	bbUP := NewBollingerUpperBandIndicator(src, window, sigma)
@@ -112,10 +112,15 @@ func TestBollingerBandIndicator(t *testing.T) {
 
 	for i := window - 1; i < len(ts.Candles); i++ {
 		j := i - (window - 1)
-		decimalAlmostEquals(t, big.NewFromString(SMAs[j]), sma.Calculate(i), 0.01)
-		decimalAlmostEquals(t, big.NewFromString(STDEVs[j]), wstd.Calculate(i), 0.01)
-		decimalAlmostEquals(t, big.NewFromString(BBUPs[j]), bbUP.Calculate(i), 0.01)
-		decimalAlmostEquals(t, big.NewFromString(BBLOs[j]), bbLO.Calculate(i), 0.01)
-		decimalAlmostEquals(t, big.NewFromString(BBWs[j]), bbUP.Calculate(i).Sub(bbLO.Calculate((i))), 0.01)
+		smaj, _ := decimal.NewFromString(SMAs[j])
+		stdevj, _ := decimal.NewFromString(STDEVs[j])
+		bbupj, _ := decimal.NewFromString(BBUPs[j])
+		bbloj, _ := decimal.NewFromString(BBLOs[j])
+		bbwj, _ := decimal.NewFromString(BBWs[j])
+		decimalAlmostEquals(t, smaj, sma.Calculate(i), 0.01)
+		decimalAlmostEquals(t, stdevj, wstd.Calculate(i), 0.01)
+		decimalAlmostEquals(t, bbupj, bbUP.Calculate(i), 0.01)
+		decimalAlmostEquals(t, bbloj, bbLO.Calculate(i), 0.01)
+		decimalAlmostEquals(t, bbwj, bbUP.Calculate(i).Sub(bbLO.Calculate((i))), 0.01)
 	}
 }

@@ -12,7 +12,7 @@ TechAn is a **tech**nical **an**alysis library for Go! It provides a suite of to
 
 ### Installation
 ```sh
-$ go get github.com/sdcoffey/techan
+$ go get github.com/algo-boyz/techan
 ```
 
 ### Quickstart
@@ -30,23 +30,23 @@ for _, datum := range dataset {
 	period := techan.NewTimePeriod(time.Unix(start, 0), time.Hour*24)
 
 	candle := techan.NewCandle(period)
-	candle.OpenPrice = big.NewFromString(datum[1])
-	candle.ClosePrice = big.NewFromString(datum[2])
-	candle.MaxPrice = big.NewFromString(datum[3])
-	candle.MinPrice = big.NewFromString(datum[4])
+	candle.Open = decimal.NewFromString(datum[1])
+	candle.Close = decimal.NewFromString(datum[2])
+	candle.High = decimal.NewFromString(datum[3])
+	candle.Low = decimal.NewFromString(datum[4])
 
 	series.AddCandle(candle)
 }
 
-closePrices := techan.NewClosePriceIndicator(series)
-movingAverage := techan.NewEMAIndicator(closePrices, 10) // Create an exponential moving average with a window of 10
+Closes := techan.NewCloseIndicator(series)
+movingAverage := techan.NewEMAIndicator(Closes, 10) // Create an exponential moving average with a window of 10
 
-fmt.Println(movingAverage.Calculate(0).FormattedString(2))
+fmt.Println(movingAverage.Calculate(0).StringFixed(2))
 ```
 
 ### Creating trading strategies
 ```go
-indicator := techan.NewClosePriceIndicator(series)
+indicator := techan.NewCloseIndicator(series)
 
 // record trades on this object
 record := techan.NewTradingRecord()

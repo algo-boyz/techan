@@ -7,7 +7,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 )
 
 // Analysis is an interface that describes a methodology for taking a TradingRecord as input,
@@ -21,7 +21,7 @@ type TotalProfitAnalysis struct{}
 
 // Analyze analyzes the trading record for total profit.
 func (tps TotalProfitAnalysis) Analyze(record *TradingRecord) float64 {
-	totalProfit := big.NewDecimal(0)
+	totalProfit := decimal.NewFromInt(0)
 	for _, trade := range record.Trades {
 		if trade.IsClosed() {
 
@@ -37,7 +37,8 @@ func (tps TotalProfitAnalysis) Analyze(record *TradingRecord) float64 {
 		}
 	}
 
-	return totalProfit.Float()
+	v, _ := totalProfit.Float64()
+	return v
 }
 
 // PercentGainAnalysis analyzes the trading record for the percentage profit gained relative to start
@@ -46,7 +47,8 @@ type PercentGainAnalysis struct{}
 // Analyze analyzes the trading record for the percentage profit gained relative to start
 func (pga PercentGainAnalysis) Analyze(record *TradingRecord) float64 {
 	if len(record.Trades) > 0 && record.Trades[0].IsClosed() {
-		return (record.Trades[len(record.Trades)-1].ExitValue().Div(record.Trades[0].CostBasis())).Sub(big.NewDecimal(1)).Float()
+		v, _ := (record.Trades[len(record.Trades)-1].ExitValue().Div(record.Trades[0].CostBasis())).Sub(decimal.NewFromInt(1)).Float64()
+		return v
 	}
 
 	return 0
@@ -109,7 +111,7 @@ func (pta ProfitableTradesAnalysis) Analyze(record *TradingRecord) float64 {
 		costBasis := trade.EntranceOrder().Amount.Mul(trade.EntranceOrder().Price)
 		sellPrice := trade.ExitOrder().Amount.Mul(trade.ExitOrder().Price)
 
-		if sellPrice.GT(costBasis) {
+		if sellPrice.GreaterThan(costBasis) {
 			profitableTrades++
 		}
 	}
@@ -145,18 +147,19 @@ func (baha BuyAndHoldAnalysis) Analyze(record *TradingRecord) float64 {
 
 	openOrder := Order{
 		Side:   BUY,
-		Amount: big.NewDecimal(baha.StartingMoney).Div(baha.TimeSeries.Candles[0].ClosePrice),
-		Price:  baha.TimeSeries.Candles[0].ClosePrice,
+		Amount: decimal.NewFromFloat(baha.StartingMoney).Div(baha.TimeSeries.Candles[0].Close),
+		Price:  baha.TimeSeries.Candles[0].Close,
 	}
 
 	closeOrder := Order{
 		Side:   SELL,
 		Amount: openOrder.Amount,
-		Price:  baha.TimeSeries.Candles[len(baha.TimeSeries.Candles)-1].ClosePrice,
+		Price:  baha.TimeSeries.Candles[len(baha.TimeSeries.Candles)-1].Close,
 	}
 
 	pos := NewPosition(openOrder)
 	pos.Exit(closeOrder)
 
-	return pos.ExitValue().Sub(pos.CostBasis()).Float()
+	v, _ := pos.ExitValue().Sub(pos.CostBasis()).Float64()
+	return v
 }

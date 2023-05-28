@@ -4,12 +4,12 @@ import (
 	"math"
 	"testing"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRelativeStrengthIndexIndicator(t *testing.T) {
-	indicator := NewRelativeStrengthIndexIndicator(NewClosePriceIndicator(mockedTimeSeries), 3)
+	indicator := NewRelativeStrengthIndexIndicator(NewCloseIndicator(mockedTimeSeries), 3)
 
 	expectedValues := []float64{
 		0,
@@ -30,7 +30,7 @@ func TestRelativeStrengthIndexIndicator(t *testing.T) {
 }
 
 func TestRelativeStrengthIndicator(t *testing.T) {
-	indicator := NewRelativeStrengthIndicator(NewClosePriceIndicator(mockedTimeSeries), 3)
+	indicator := NewRelativeStrengthIndicator(NewCloseIndicator(mockedTimeSeries), 3)
 
 	expectedValues := []float64{
 		0,
@@ -51,7 +51,7 @@ func TestRelativeStrengthIndicator(t *testing.T) {
 }
 
 func TestRelativeStrengthIndicatorNoPriceChange(t *testing.T) {
-	close := NewClosePriceIndicator(mockTimeSeries("42.0", "42.0"))
+	close := NewCloseIndicator(mockTimeSeries("42.0", "42.0"))
 	rsInd := NewRelativeStrengthIndicator(close, 2)
-	assert.Equal(t, big.NewDecimal(math.Inf(1)).FormattedString(2), rsInd.Calculate(1).FormattedString(2))
+	assert.Equal(t, decimal.NewFromFloat(math.MaxFloat64).StringFixed(2), rsInd.Calculate(1).StringFixed(2))
 }

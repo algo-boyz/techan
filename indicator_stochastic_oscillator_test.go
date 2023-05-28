@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -59,7 +59,7 @@ func TestSlowStochasticIndicator(t *testing.T) {
 
 	window := 3
 
-	d := NewSlowStochasticIndicator(NewClosePriceIndicator(ts), window)
+	d := NewSlowStochasticIndicator(NewCloseIndicator(ts), window)
 
 	decimalEquals(t, 0, d.Calculate(0))
 	decimalEquals(t, 0, d.Calculate(1))
@@ -81,5 +81,5 @@ func TestFastStochasticIndicatorNoPriceChange(t *testing.T) {
 	)
 
 	k := NewFastStochasticIndicator(ts, 2)
-	assert.Equal(t, big.NewDecimal(math.Inf(1)).FormattedString(2), k.Calculate(1).FormattedString(2))
+	assert.Equal(t, decimal.NewFromFloat(math.MaxFloat64).StringFixed(2), k.Calculate(1).StringFixed(2))
 }

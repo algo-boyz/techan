@@ -3,36 +3,36 @@ package techan
 import (
 	"math"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 )
 
 type aroonIndicator struct {
 	indicator Indicator
 	window    int
-	direction big.Decimal
+	direction decimal.Decimal
 	lowIndex  int
 }
 
-func (ai *aroonIndicator) Calculate(index int) big.Decimal {
+func (ai *aroonIndicator) Calculate(index int) decimal.Decimal {
 	if index < ai.window-1 {
-		return big.ZERO
+		return decimal.Zero
 	}
 
-	oneHundred := big.TEN.Mul(big.TEN)
+	oneHundred := decimal.NewFromInt(10).Mul(decimal.NewFromInt(10))
 	ai.lowIndex = ai.findLowIndex(index)
-	pSince := big.NewDecimal(float64(index - ai.lowIndex))
-	windowAsDecimal := big.NewDecimal(float64(ai.window))
+	pSince := decimal.NewFromFloat(float64(index - ai.lowIndex))
+	windowAsDecimal := decimal.NewFromInt(int64(ai.window))
 
 	return windowAsDecimal.Sub(pSince).Div(windowAsDecimal).Mul(oneHundred)
 }
 
 func (ai aroonIndicator) findLowIndex(index int) int {
 	if ai.lowIndex < 1 || ai.lowIndex < index-ai.window {
-		lv := big.NewDecimal(math.MaxFloat64)
+		lv := decimal.NewFromFloat(math.MaxFloat64)
 		lowIndex := -1
 		for i := (index + 1) - ai.window; i <= index; i++ {
 			value := ai.indicator.Calculate(i).Mul(ai.direction)
-			if value.LT(lv) {
+			if value.LessThan(lv) {
 				lv = value
 				lowIndex = i
 			}
@@ -44,7 +44,7 @@ func (ai aroonIndicator) findLowIndex(index int) int {
 	v1 := ai.indicator.Calculate(index).Mul(ai.direction)
 	v2 := ai.indicator.Calculate(ai.lowIndex).Mul(ai.direction)
 
-	if v1.LT(v2) {
+	if v1.LessThan(v2) {
 		return index
 	}
 
@@ -60,7 +60,7 @@ func NewAroonUpIndicator(indicator Indicator, window int) Indicator {
 	return &aroonIndicator{
 		indicator: indicator,
 		window:    window,
-		direction: big.ONE.Neg(),
+		direction: decimal.NewFromInt(1).Neg(),
 		lowIndex:  -1,
 	}
 }
@@ -74,7 +74,7 @@ func NewAroonDownIndicator(indicator Indicator, window int) Indicator {
 	return &aroonIndicator{
 		indicator: indicator,
 		window:    window,
-		direction: big.ONE,
+		direction: decimal.NewFromInt(1),
 		lowIndex:  -1,
 	}
 }

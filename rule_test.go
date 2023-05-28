@@ -109,14 +109,14 @@ func TestPercentChangeRule(t *testing.T) {
 
 	t.Run("returns false when percent change is less than the amount", func(t *testing.T) {
 		series := mockTimeSeries("1", "1.1")
-		rule := NewPercentChangeRule(NewClosePriceIndicator(series), 0.25)
+		rule := NewPercentChangeRule(NewCloseIndicator(series), 0.25)
 
 		assert.False(t, rule.IsSatisfied(1, record))
 	})
 
 	t.Run("returns true when percent change is greater than the amount", func(t *testing.T) {
 		series := mockTimeSeries("1", "1.11")
-		rule := NewPercentChangeRule(NewClosePriceIndicator(series), 0.1)
+		rule := NewPercentChangeRule(NewCloseIndicator(series), 0.1)
 
 		assert.True(t, rule.IsSatisfied(1, record))
 	})

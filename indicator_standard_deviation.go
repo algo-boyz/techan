@@ -1,8 +1,6 @@
 package techan
 
-import (
-	"github.com/sdcoffey/big"
-)
+import "github.com/algo-boyz/decimal"
 
 // NewStandardDeviationIndicator calculates the standard deviation of a base indicator.
 // See https://www.investopedia.com/terms/s/standarddeviation.asp
@@ -17,6 +15,10 @@ type standardDeviationIndicator struct {
 }
 
 // Calculate returns the standard deviation of a base indicator
-func (sdi standardDeviationIndicator) Calculate(index int) big.Decimal {
-	return sdi.indicator.Calculate(index).Sqrt()
+func (sdi standardDeviationIndicator) Calculate(index int) decimal.Decimal {
+	d, err := sdi.indicator.Calculate(index).Sqrt()
+	if err != nil {
+		panic(err)
+	}
+	return d
 }

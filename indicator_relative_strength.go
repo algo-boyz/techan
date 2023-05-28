@@ -3,12 +3,12 @@ package techan
 import (
 	"math"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 )
 
 type relativeStrengthIndexIndicator struct {
 	rsIndicator Indicator
-	oneHundred  big.Decimal
+	oneHundred  decimal.Decimal
 }
 
 // NewRelativeStrengthIndexIndicator returns a derivative Indicator which returns the relative strength index of the base indicator
@@ -17,14 +17,14 @@ type relativeStrengthIndexIndicator struct {
 func NewRelativeStrengthIndexIndicator(indicator Indicator, timeframe int) Indicator {
 	return relativeStrengthIndexIndicator{
 		rsIndicator: NewRelativeStrengthIndicator(indicator, timeframe),
-		oneHundred:  big.NewFromString("100"),
+		oneHundred:  decimal.NewFromInt(100),
 	}
 }
 
-func (rsi relativeStrengthIndexIndicator) Calculate(index int) big.Decimal {
+func (rsi relativeStrengthIndexIndicator) Calculate(index int) decimal.Decimal {
 	relativeStrength := rsi.rsIndicator.Calculate(index)
 
-	return rsi.oneHundred.Sub(rsi.oneHundred.Div(big.ONE.Add(relativeStrength)))
+	return rsi.oneHundred.Sub(rsi.oneHundred.Div(decimal.NewFromInt(1).Add(relativeStrength)))
 }
 
 type relativeStrengthIndicator struct {
@@ -44,16 +44,16 @@ func NewRelativeStrengthIndicator(indicator Indicator, timeframe int) Indicator 
 	}
 }
 
-func (rs relativeStrengthIndicator) Calculate(index int) big.Decimal {
+func (rs relativeStrengthIndicator) Calculate(index int) decimal.Decimal {
 	if index < rs.window-1 {
-		return big.ZERO
+		return decimal.Zero
 	}
 
 	avgGain := rs.avgGain.Calculate(index)
 	avgLoss := rs.avgLoss.Calculate(index)
 
-	if avgLoss.EQ(big.ZERO) {
-		return big.NewDecimal(math.Inf(1))
+	if avgLoss.Equal(decimal.Zero) {
+		return decimal.NewFromFloat(math.MaxFloat64)
 	}
 
 	return avgGain.Div(avgLoss)

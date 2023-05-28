@@ -4,12 +4,11 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
+	"strconv"
 	"testing"
 	"time"
 
-	"strconv"
-
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -44,11 +43,11 @@ func mockTimeSeriesOCHL(values ...[]float64) *TimeSeries {
 	ts := NewTimeSeries()
 	for i, ochl := range values {
 		candle := NewCandle(NewTimePeriod(time.Unix(int64(i), 0), time.Second))
-		candle.OpenPrice = big.NewDecimal(ochl[0])
-		candle.ClosePrice = big.NewDecimal(ochl[1])
-		candle.MaxPrice = big.NewDecimal(ochl[2])
-		candle.MinPrice = big.NewDecimal(ochl[3])
-		candle.Volume = big.NewDecimal(float64(i))
+		candle.Open = decimal.NewFromFloat(ochl[0])
+		candle.Close = decimal.NewFromFloat(ochl[1])
+		candle.High = decimal.NewFromFloat(ochl[2])
+		candle.Low = decimal.NewFromFloat(ochl[3])
+		candle.Volume = decimal.NewFromFloat(float64(i))
 
 		ts.AddCandle(candle)
 	}
@@ -60,11 +59,13 @@ func mockTimeSeries(values ...string) *TimeSeries {
 	ts := NewTimeSeries()
 	for _, val := range values {
 		candle := NewCandle(NewTimePeriod(time.Unix(int64(candleIndex), 0), time.Second))
-		candle.OpenPrice = big.NewFromString(val)
-		candle.ClosePrice = big.NewFromString(val)
-		candle.MaxPrice = big.NewFromString(val).Add(big.ONE)
-		candle.MinPrice = big.NewFromString(val).Sub(big.ONE)
-		candle.Volume = big.NewFromString(val)
+		candle.Open, _ = decimal.NewFromString(val)
+		candle.Close, _ = decimal.NewFromString(val)
+		tmp, _ := decimal.NewFromString(val)
+		candle.High = tmp.Add(decimal.NewFromInt(1))
+		tmp, _ = decimal.NewFromString(val)
+		candle.Low = tmp.Sub(decimal.NewFromInt(1))
+		candle.Volume, _ = decimal.NewFromString(val)
 
 		ts.AddCandle(candle)
 
@@ -84,8 +85,8 @@ func mockTimeSeriesFl(values ...float64) *TimeSeries {
 	return mockTimeSeries(strVals...)
 }
 
-func decimalEquals(t *testing.T, expected float64, actual big.Decimal) {
-	assert.Equal(t, fmt.Sprintf("%.4f", expected), fmt.Sprintf("%.4f", actual.Float()))
+func decimalEquals(t *testing.T, expected float64, actual decimal.Decimal) {
+	assert.Equal(t, fmt.Sprintf("%.4f", expected), fmt.Sprintf("%.4f", actual.InexactFloat64()))
 }
 
 func dump(indicator Indicator) (values []float64) {
@@ -98,7 +99,7 @@ func dump(indicator Indicator) (values []float64) {
 
 	var index int
 	for {
-		values = append(values, math.Round(indicator.Calculate(index).Float()*m)/m)
+		values = append(values, math.Round(indicator.Calculate(index).InexactFloat64()*m)/m)
 		index++
 	}
 

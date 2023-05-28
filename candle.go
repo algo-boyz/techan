@@ -4,53 +4,53 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sdcoffey/big"
+	"github.com/algo-boyz/decimal"
 )
 
 // Candle represents basic market information for a security over a given time period
 type Candle struct {
 	Period     TimePeriod
-	OpenPrice  big.Decimal
-	ClosePrice big.Decimal
-	MaxPrice   big.Decimal
-	MinPrice   big.Decimal
-	Volume     big.Decimal
+	Open       decimal.Decimal
+	Close      decimal.Decimal
+	High       decimal.Decimal
+	Low        decimal.Decimal
+	Volume     decimal.Decimal
 	TradeCount uint
 }
 
 // NewCandle returns a new *Candle for a given time period
 func NewCandle(period TimePeriod) (c *Candle) {
 	return &Candle{
-		Period:     period,
-		OpenPrice:  big.ZERO,
-		ClosePrice: big.ZERO,
-		MaxPrice:   big.ZERO,
-		MinPrice:   big.ZERO,
-		Volume:     big.ZERO,
+		Period: period,
+		Open:   decimal.Zero,
+		Close:  decimal.Zero,
+		High:   decimal.Zero,
+		Low:    decimal.Zero,
+		Volume: decimal.Zero,
 	}
 }
 
 // AddTrade adds a trade to this candle. It will determine if the current price is higher or lower than the min or max
 // price and increment the tradecount.
-func (c *Candle) AddTrade(tradeAmount, tradePrice big.Decimal) {
-	if c.OpenPrice.Zero() {
-		c.OpenPrice = tradePrice
+func (c *Candle) AddTrade(tradeAmount, tradePrice decimal.Decimal) {
+	if c.Open.IsZero() {
+		c.Open = tradePrice
 	}
-	c.ClosePrice = tradePrice
+	c.Close = tradePrice
 
-	if c.MaxPrice.Zero() {
-		c.MaxPrice = tradePrice
-	} else if tradePrice.GT(c.MaxPrice) {
-		c.MaxPrice = tradePrice
-	}
-
-	if c.MinPrice.Zero() {
-		c.MinPrice = tradePrice
-	} else if tradePrice.LT(c.MinPrice) {
-		c.MinPrice = tradePrice
+	if c.High.IsZero() {
+		c.High = tradePrice
+	} else if tradePrice.GreaterThan(c.High) {
+		c.High = tradePrice
 	}
 
-	if c.Volume.Zero() {
+	if c.Low.IsZero() {
+		c.Low = tradePrice
+	} else if tradePrice.LessThan(c.Low) {
+		c.Low = tradePrice
+	}
+
+	if c.Volume.IsZero() {
 		c.Volume = tradeAmount
 	} else {
 		c.Volume = c.Volume.Add(tradeAmount)
@@ -70,10 +70,10 @@ Low:	%s
 Volume:	%s
 	`,
 		c.Period,
-		c.OpenPrice.FormattedString(2),
-		c.ClosePrice.FormattedString(2),
-		c.MaxPrice.FormattedString(2),
-		c.MinPrice.FormattedString(2),
-		c.Volume.FormattedString(2),
+		c.Open.StringFixed(2),
+		c.Close.StringFixed(2),
+		c.High.StringFixed(2),
+		c.Low.StringFixed(2),
+		c.Volume.StringFixed(2),
 	))
 }

@@ -23,12 +23,12 @@ func TestExponentialMovingAverage(t *testing.T) {
 			62.151,
 		}
 
-		closePriceIndicator := NewClosePriceIndicator(mockedTimeSeries)
-		indicatorEquals(t, expectedValues, NewEMAIndicator(closePriceIndicator, 4))
+		CloseIndicator := NewCloseIndicator(mockedTimeSeries)
+		indicatorEquals(t, expectedValues, NewEMAIndicator(CloseIndicator, 4))
 	})
 
 	t.Run("Expands Result Cache", func(t *testing.T) {
-		closeIndicator := NewClosePriceIndicator(randomTimeSeries(1001))
+		closeIndicator := NewCloseIndicator(randomTimeSeries(1001))
 		ema := NewEMAIndicator(closeIndicator, 20)
 
 		ema.Calculate(1000)
@@ -45,7 +45,7 @@ func BenchmarkExponetialMovingAverage(b *testing.B) {
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
-		ema := NewEMAIndicator(NewClosePriceIndicator(ts), 10)
+		ema := NewEMAIndicator(NewCloseIndicator(ts), 10)
 		ema.Calculate(size - 1)
 	}
 }
@@ -53,7 +53,7 @@ func BenchmarkExponetialMovingAverage(b *testing.B) {
 func BenchmarkExponentialMovingAverage_Cached(b *testing.B) {
 	size := 10000
 	ts := randomTimeSeries(size)
-	ema := NewEMAIndicator(NewClosePriceIndicator(ts), 10)
+	ema := NewEMAIndicator(NewCloseIndicator(ts), 10)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
