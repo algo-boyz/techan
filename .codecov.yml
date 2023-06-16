@@ -1,4 +1,5 @@
 ignore:
   - testutils.go
   - example/**/*
+  - ichimoku/example/**/*
   - scripts/**/*

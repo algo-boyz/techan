@@ -23,7 +23,8 @@ func (sma smaIndicator) Calculate(index int) decimal.Decimal {
 		sum = sum.Add(sma.indicator.Calculate(i))
 	}
 
-	result := sum.Div(decimal.NewFromInt(int64(sma.window)))
+	period := decimal.NewFromInt(int64(sma.window))
+	result := sum.Div(period)
 
 	return result
 }

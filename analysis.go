@@ -20,8 +20,8 @@ type Analysis interface {
 type TotalProfitAnalysis struct{}
 
 // Analyze analyzes the trading record for total profit.
-func (tps TotalProfitAnalysis) Analyze(record *TradingRecord) float64 {
-	totalProfit := decimal.NewFromInt(0)
+func (tps TotalProfitAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
+	var totalProfit = decimal.NewFromInt(0)
 	for _, trade := range record.Trades {
 		if trade.IsClosed() {
 
@@ -37,29 +37,27 @@ func (tps TotalProfitAnalysis) Analyze(record *TradingRecord) float64 {
 		}
 	}
 
-	v, _ := totalProfit.Float64()
-	return v
+	return totalProfit
 }
 
 // PercentGainAnalysis analyzes the trading record for the percentage profit gained relative to start
 type PercentGainAnalysis struct{}
 
 // Analyze analyzes the trading record for the percentage profit gained relative to start
-func (pga PercentGainAnalysis) Analyze(record *TradingRecord) float64 {
+func (pga PercentGainAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
 	if len(record.Trades) > 0 && record.Trades[0].IsClosed() {
-		v, _ := (record.Trades[len(record.Trades)-1].ExitValue().Div(record.Trades[0].CostBasis())).Sub(decimal.NewFromInt(1)).Float64()
-		return v
+		return (record.Trades[len(record.Trades)-1].ExitValue().Div(record.Trades[0].CostBasis())).Sub(decimal.NewFromInt(1))
 	}
 
-	return 0
+	return decimal.Zero
 }
 
 // NumTradesAnalysis analyzes the trading record for the number of trades executed
 type NumTradesAnalysis string
 
 // Analyze analyzes the trading record for the number of trades executed
-func (nta NumTradesAnalysis) Analyze(record *TradingRecord) float64 {
-	return float64(len(record.Trades))
+func (nta NumTradesAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
+	return decimal.NewFromInt(int64(len(record.Trades)))
 }
 
 // LogTradesAnalysis is a wrapper around an io.Writer, which logs every trade executed to that writer
@@ -68,7 +66,7 @@ type LogTradesAnalysis struct {
 }
 
 // Analyze logs trades to provided io.Writer
-func (lta LogTradesAnalysis) Analyze(record *TradingRecord) float64 {
+func (lta LogTradesAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
 	logOrder := func(trade *Position) {
 		fmt.Fprintln(lta.Writer, fmt.Sprintf("%s - enter with buy %s (%s @ $%s)", trade.EntranceOrder().ExecutionTime.UTC().Format(time.RFC822), trade.EntranceOrder().Security, trade.EntranceOrder().Amount, trade.EntranceOrder().Price))
 		fmt.Fprintln(lta.Writer, fmt.Sprintf("%s - exit with sell %s (%s @ $%s)", trade.ExitOrder().ExecutionTime.UTC().Format(time.RFC822), trade.ExitOrder().Security, trade.ExitOrder().Amount, trade.ExitOrder().Price))
@@ -82,7 +80,7 @@ func (lta LogTradesAnalysis) Analyze(record *TradingRecord) float64 {
 			logOrder(trade)
 		}
 	}
-	return 0.0
+	return decimal.Zero
 }
 
 // PeriodProfitAnalysis analyzes the trading record for the average profit based on the time period provided.
@@ -93,20 +91,23 @@ type PeriodProfitAnalysis struct {
 }
 
 // Analyze returns the average profit for the trading record based on the given duration
-func (ppa PeriodProfitAnalysis) Analyze(record *TradingRecord) float64 {
-	var tp TotalProfitAnalysis
-	totalProfit := tp.Analyze(record)
-
-	periods := record.Trades[len(record.Trades)-1].ExitOrder().ExecutionTime.Sub(record.Trades[0].EntranceOrder().ExecutionTime) / ppa.Period
-	return totalProfit / float64(periods)
+func (ppa PeriodProfitAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
+	var (
+		tp          TotalProfitAnalysis
+		totalProfit = tp.Analyze(record)
+		lastTrade   = record.Trades[len(record.Trades)-1]
+		duration    = lastTrade.ExitOrder().ExecutionTime.Sub(record.Trades[0].EntranceOrder().ExecutionTime)
+		periods     = decimal.NewFromFloat(float64(duration)).Div(decimal.NewFromFloat(float64(ppa.Period)))
+	)
+	return totalProfit.Div(periods)
 }
 
 // ProfitableTradesAnalysis analyzes the trading record for the number of profitable trades
 type ProfitableTradesAnalysis struct{}
 
 // Analyze returns the number of profitable trades in a trading record
-func (pta ProfitableTradesAnalysis) Analyze(record *TradingRecord) float64 {
-	var profitableTrades int
+func (pta ProfitableTradesAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
+	var profitableTrades int64
 	for _, trade := range record.Trades {
 		costBasis := trade.EntranceOrder().Amount.Mul(trade.EntranceOrder().Price)
 		sellPrice := trade.ExitOrder().Amount.Mul(trade.ExitOrder().Price)
@@ -116,7 +117,7 @@ func (pta ProfitableTradesAnalysis) Analyze(record *TradingRecord) float64 {
 		}
 	}
 
-	return float64(profitableTrades)
+	return decimal.NewFromInt(profitableTrades)
 }
 
 // AverageProfitAnalysis returns the average profit for the trading record. Average profit is represented as the total
@@ -124,11 +125,13 @@ func (pta ProfitableTradesAnalysis) Analyze(record *TradingRecord) float64 {
 type AverageProfitAnalysis struct{}
 
 // Analyze returns the average profit of the trading record
-func (apa AverageProfitAnalysis) Analyze(record *TradingRecord) float64 {
-	var tp TotalProfitAnalysis
-	totalProft := tp.Analyze(record)
-
-	return totalProft / float64(len(record.Trades))
+func (apa AverageProfitAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
+	var (
+		tp         TotalProfitAnalysis
+		totalProft = tp.Analyze(record)
+		lenTrades  = decimal.NewFromInt(int64(len(record.Trades)))
+	)
+	return totalProft.Div(lenTrades)
 }
 
 // BuyAndHoldAnalysis returns the profit based on a hypothetical where a purchase order was made on the first period available
@@ -140,9 +143,9 @@ type BuyAndHoldAnalysis struct {
 }
 
 // Analyze returns the profit based on a simple buy and hold strategy
-func (baha BuyAndHoldAnalysis) Analyze(record *TradingRecord) float64 {
+func (baha BuyAndHoldAnalysis) Analyze(record *TradingRecord) decimal.Decimal {
 	if len(record.Trades) == 0 {
-		return 0
+		return decimal.Zero
 	}
 
 	openOrder := Order{
@@ -160,6 +163,5 @@ func (baha BuyAndHoldAnalysis) Analyze(record *TradingRecord) float64 {
 	pos := NewPosition(openOrder)
 	pos.Exit(closeOrder)
 
-	v, _ := pos.ExitValue().Sub(pos.CostBasis()).Float64()
-	return v
+	return pos.ExitValue().Sub(pos.CostBasis())
 }

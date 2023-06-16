@@ -1,9 +1,9 @@
 ## Techan
-![](https://travis-ci.org/sdcoffey/techan.svg?branch=master)
+![](https://travis-ci.org/algo-boyz/techan.svg?branch=master)
 
-[![codecov](https://codecov.io/gh/sdcoffey/techan/branch/master/graph/badge.svg)](https://codecov.io/gh/sdcoffey/techan)
+[![codecov](https://codecov.io/gh/algo-boyz/techan/branch/master/graph/badge.svg)](https://codecov.io/gh/algo-boyz/techan)
 
-TechAn is a **tech**nical **an**alysis library for Go! It provides a suite of tools and frameworks to analyze financial data and make trading decisions.
+TechAn is a **tech**nical **an**alysis library for Go!
 
 ## Features 
 * Basic and advanced technical analysis indicators
@@ -44,7 +44,7 @@ movingAverage := techan.NewEMAIndicator(Closes, 10) // Create an exponential mov
 fmt.Println(movingAverage.Calculate(0).StringFixed(2))
 ```
 
-### Creating trading strategies
+### Create trading strategies
 ```go
 indicator := techan.NewCloseIndicator(series)
 
@@ -73,14 +73,8 @@ strategy := techan.RuleStrategy{
 strategy.ShouldEnter(0, record) // returns false
 ```
 
-### Enjoying this project?
-Are you using techan in production? You can sponsor its development by buying me a coffee! ☕
-
-**ETH:** `0x2D9d3A1c16F118A3a59d0e446d574e1F01F62949`
-
 ### Credits
-Techan is heavily influenced by the great [ta4j](https://github.com/ta4j/ta4j). Many of the ideas and frameworks in this library owe their genesis to the great work done over there.
+Techan is heavily influenced by [ta4j](https://github.com/ta4j/ta4j)
 
 ### License
-
 Techan is released under the MIT license. See [LICENSE](./LICENSE) for details.
